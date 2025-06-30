@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Botão que Foge</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background-color: #f0f0f0;
+      font-family: sans-serif;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      margin: 20px 0;
+    }
+
+    #botoes-container {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      justify-content: center;
+      flex-grow: 1;
+      position: relative;
+      width: 100%;
+    }
+
+    .botao {
+      padding: 15px 30px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      z-index: 1;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+    }
+
+    #botao-fixo {
+      background-color: #27ae60;
+      color: white;
+    }
+
+    #botao-fugitivo {
+      background-color: #e74c3c;
+      color: white;
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Tente clicar no botão vermelho... se conseguir 😄</h1>
+
+  <div id="botoes-container">
+    <a href="https://www.youtube.com/watch?v=SETK2maosQY" target="_blank" class="botao" id="botao-fixo">Botão Fixo</a>
+    <button id="botao-fugitivo" class="botao">Botão Fugitivo</button>
+  </div>
+
+  <script>
+    const botaoFugitivo = document.getElementById("botao-fugitivo");
+    const distancia = 100;
+
+    document.addEventListener("mousemove", (e) => {
+      const mouseX = e.clientX;
+      const mouseY = e.clientY;
+      const rect = botaoFugitivo.getBoundingClientRect();
+
+      const botaoX = rect.left + rect.width / 2;
+      const botaoY = rect.top + rect.height / 2;
+
+      const deltaX = mouseX - botaoX;
+      const deltaY = mouseY - botaoY;
+      const distanciaTotal = Math.sqrt(deltaX ** 2 + deltaY ** 2);
+
+      if (distanciaTotal < distancia) {
+        const novaX = Math.random() * (window.innerWidth - rect.width);
+        const novaY = Math.random() * (window.innerHeight - rect.height - 60);
+
+        botaoFugitivo.style.position = "absolute";
+        botaoFugitivo.style.left = `${novaX}px`;
+        botaoFugitivo.style.top = `${novaY}px`;
+      }
+    });
+  </script>
+
+</body>
+</html>
