@@ -1,94 +1,87 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <title>Botão que Foge</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      height: 100vh;
-      background-color: #f0f0f0;
-      font-family: sans-serif;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+<!doctype html>
+item.innerHTML = `<div style="max-width:220px"><strong>${act.title}</strong><div style="color:var(--muted); font-size:13px">${act.description}</div></div>
+<div style="display:flex; gap:8px; align-items:center">
+<div style="text-align:right"><div style="font-weight:700">Custo ${act.cost}</div><div style="color:var(--muted); font-size:12px">Redução ${act.effect}°C</div></div>
+<button aria-pressed="false" data-id="${act.id}">Selecionar</button>
+</div>`;
+const btn = item.querySelector('button');
+btn.addEventListener('click', ()=> toggleAction(act.id));
+if(selectedActions.has(act.id)) btn.textContent = 'Selecionado';
+actionsList.appendChild(item);
+});
+}
 
-    h1 {
-      margin: 20px 0;
-    }
 
-    #botoes-container {
-      display: flex;
-      gap: 20px;
-      align-items: center;
-      justify-content: center;
-      flex-grow: 1;
-      position: relative;
-      width: 100%;
-    }
+function toggleAction(id){
+if(selectedActions.has(id)){
+selectedActions.delete(id);
+} else {
+const act = actionsCatalog.find(a=>a.id===id);
+if(points < act.cost){
+alert('Você não tem pontos suficientes para selecionar esta ação.');
+return;
+}
+selectedActions.add(id);
+}
+renderActions();
+}
 
-    .botao {
-      padding: 15px 30px;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      z-index: 1;
-      text-decoration: none;
-      display: inline-block;
-      text-align: center;
-    }
 
-    #botao-fixo {
-      background-color: #27ae60;
-      color: white;
-    }
+function applySelected(){
+if(selectedActions.size === 0){ alert('Selecione pelo menos uma ação para aplicar.'); return; }
+// calcula custo e efeito
+let totalCost = 0; let totalEffect = 0;
+selectedActions.forEach(id=>{
+const a = actionsCatalog.find(x=>x.id===id);
+totalCost += a.cost; totalEffect += a.effect;
+});
+if(points < totalCost){ alert('Pontos insuficientes para aplicar todas as ações selecionadas.'); return; }
+// aplica
+setPoints(points - totalCost);
+// redução de temperatura simples: subtrai efeito, mas limitamos a -0.5 por rodada
+temp = +(temp + totalEffect).toFixed(2);
+if(temp < 0) temp = 0;
+updateTherm();
+// pontua jogador por aplicar ações
+setScore(score + Math.floor(totalCost*1.5));
+// limpa seleção
+selectedActions.clear();
+renderActions();
+alert('Ações aplicadas! Observe o termômetro. Discuta em sala: quais efeitos reais poderiam demorar anos para aparecer?');
+}
 
-    #botao-fugitivo {
-      background-color: #e74c3c;
-      color: white;
-      position: relative;
-    }
-  </style>
-</head>
-<body>
 
-  <h1>O joao ta merecendo um cheiro da layra?</h1>
+// --- UI screens ---
+function showScreen(name){
+intro.style.display = name==='intro' ? 'flex' : 'none';
+quiz.style.display = name==='quiz' ? 'block' : 'none';
+choicesPanel.style.display = name==='choices' ? 'block' : 'none';
+}
 
-  <div id="botoes-container">
-    <a href="https://www.youtube.com/watch?v=1-x8CaDmkp0&list=RD1-x8CaDmkp0&start_radio=1" target="_blank" class="botao" id="botao-fixo">Sim Varios</a>
-    <button id="botao-fugitivo" class="botao">Sim Um</button>
-  </div>
 
-  <script>
-    const botaoFugitivo = document.getElementById("botao-fugitivo");
-    const distancia = 100;
+// --- Eventos ---
+startBtn.addEventListener('click', ()=>{ showScreen('quiz'); renderQuestion(0); });
+playQuiz.addEventListener('click', ()=>{ startBtn.click(); });
+nextQ.addEventListener('click', ()=> nextQuestion());
+skipQ.addEventListener('click', ()=> { currentQ++; if(currentQ >= quizData.length) showScreen('choices'); else renderQuestion(currentQ); });
+resetBtn.addEventListener('click', ()=> resetGame());
+applyAll.addEventListener('click', ()=> applySelected());
 
-    document.addEventListener("mousemove", (e) => {
-      const mouseX = e.clientX;
-      const mouseY = e.clientY;
-      const rect = botaoFugitivo.getBoundingClientRect();
 
-      const botaoX = rect.left + rect.width / 2;
-      const botaoY = rect.top + rect.height / 2;
+// Inicialização
+resetGame();
+renderActions();
+updateTherm();
 
-      const deltaX = mouseX - botaoX;
-      const deltaY = mouseY - botaoY;
-      const distanciaTotal = Math.sqrt(deltaX ** 2 + deltaY ** 2);
 
-      if (distanciaTotal < distancia) {
-        const novaX = Math.random() * (window.innerWidth - rect.width);
-        const novaY = Math.random() * (window.innerHeight - rect.height - 60);
+// Acessibilidade: permitir teclado para opções com Enter
+qOptions.addEventListener('keydown', (e)=>{
+if(e.key === 'Enter' && e.target.classList.contains('option')){
+e.target.click();
+}
+});
 
-        botaoFugitivo.style.position = "absolute";
-        botaoFugitivo.style.left = `${novaX}px`;
-        botaoFugitivo.style.top = `${novaY}px`;
-      }
-    });
-  </script>
 
+</script>
 </body>
 </html>
